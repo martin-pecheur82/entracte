@@ -510,10 +510,10 @@
                 document.getElementById('rating').value = p.rating;
                 document.getElementById('rating-val').innerText = p.rating;
                 document.getElementById('critique').value = p.critique || '';
-		document.getElementById('youtube-url').value = p.youtubeUrl || '';
-		document.getElementById('website-url').value = p.websiteUrl || '';
-		document.getElementById('image-urls').value =
-   		 Array.isArray(p.imageUrls) ? p.imageUrls.join('\n') : '';
+				document.getElementById('youtube-url').value = p.youtubeUrl || '';
+				document.getElementById('website-url').value = p.websiteUrl || '';
+				document.getElementById('image-urls').value =
+   		 			Array.isArray(p.imageUrls) ? p.imageUrls.join('\n') : '';
             } else {
                 document.getElementById('rating-val').innerText = "3";
                 document.getElementById('rating').value = 3;
@@ -574,7 +574,9 @@
             document.getElementById('view-venue').innerText = p.venue || 'Théâtre libre';
             document.getElementById('view-date').innerText = p.viewDate ? new Date(p.viewDate).toLocaleDateString('fr-FR', {day: 'numeric', month: 'long', year: 'numeric'}) : 'Date inconnue';
             document.getElementById('view-critique').innerText = p.critique || "Aucun ressenti enregistré.";
-            
+// Afficher la vidéo YouTube, les photos et le site officiel
+renderPieceMedia(p);
+			
             // Setup Star button
             const starBtn = document.getElementById('view-star-btn');
             starBtn.onclick = () => toggleTopFiveFromView(id);
