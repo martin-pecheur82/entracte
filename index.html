@@ -180,6 +180,43 @@
                     <p id="view-critique" class="critique-text text-gray-700 italic serif text-xl relative z-10"></p>
                 </div>
 
+<!-- NOUVELLE SECTION MULTIMÉDIA DE LA FICHE -->
+<div id="view-media-section" class="hidden mt-12 space-y-10">
+
+    <!-- Vidéo YouTube -->
+    <section id="view-video-section" class="hidden">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fab fa-youtube text-red-600 mr-2"></i>Vidéo
+        </h3>
+        <div class="aspect-video overflow-hidden rounded-3xl bg-black">
+            <iframe id="view-video"
+                class="w-full h-full"
+                title="Vidéo YouTube du spectacle"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen></iframe>
+        </div>
+    </section>
+
+    <!-- Galerie photo -->
+    <section id="view-gallery-section" class="hidden">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">
+            <i class="fas fa-images mr-2"></i>Galerie photos
+        </h3>
+        <div id="view-gallery" class="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"></div>
+    </section>
+
+    <!-- Site officiel -->
+    <section id="view-website-section" class="hidden">
+        <a id="view-website" href="#" target="_blank" rel="noopener noreferrer"
+            class="inline-flex items-center gap-3 rounded-2xl bg-black px-6 py-4 font-bold text-white transition hover:bg-gray-800">
+            <i class="fas fa-external-link-alt"></i>
+            Visiter le site officiel
+        </a>
+    </section>
+
+</div>
+<!-- FIN DE LA SECTION MULTIMÉDIA -->
                 <div class="mt-12 flex justify-end">
                     <button id="view-edit-btn" class="text-xs font-black uppercase tracking-widest text-gray-300 hover:text-black py-2 px-4 border border-gray-100 rounded-xl transition">Modifier la fiche</button>
                 </div>
@@ -204,6 +241,46 @@
                     <input type="range" id="rating" min="0" max="5" step="0.5" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-black mt-2">
                 </div>
                 <textarea id="critique" rows="4" placeholder="Quelques mots sur votre ressenti..." class="w-full p-5 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-black"></textarea>
+
+<!-- NOUVEAUX CHAMPS MULTIMÉDIAS -->
+<div class="space-y-5 rounded-3xl border border-gray-100 bg-white p-5">
+    <h3 class="font-bold text-gray-900">
+        <i class="fas fa-photo-video mr-2"></i>
+        Médias et liens
+    </h3>
+
+    <div>
+        <label for="youtube-url" class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+            Vidéo YouTube (facultatif)
+        </label>
+        <input type="url" id="youtube-url"
+            placeholder="https://www.youtube.com/watch?v=..."
+            class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-black">
+        <p class="text-xs text-gray-400 mt-2">La vidéo sera intégrée à la fiche.</p>
+    </div>
+
+    <div>
+        <label for="website-url" class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+            Site officiel de la compagnie (facultatif)
+        </label>
+        <input type="url" id="website-url"
+            placeholder="https://www.exemple.fr"
+            class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-black">
+    </div>
+
+    <div>
+        <label for="image-urls" class="block text-xs font-black uppercase tracking-widest text-gray-400 mb-2">
+            Liens des photos (facultatif)
+        </label>
+        <textarea id="image-urls" rows="4"
+            placeholder="https://hebergeur.fr/photo1.jpg&#10;https://hebergeur.fr/photo2.jpg"
+            class="w-full p-4 bg-gray-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-black"></textarea>
+        <p class="text-xs text-gray-400 mt-2">
+            Un lien direct par ligne. Tu peux ajouter autant de photos que tu veux.
+        </p>
+    </div>
+</div>
+<!-- FIN DES NOUVEAUX CHAMPS -->
                 <div class="flex gap-4 pt-4">
                     <button type="button" onclick="closeModals()" class="flex-1 py-5 font-bold text-gray-400">Annuler</button>
                     <button type="submit" class="flex-1 py-5 bg-black text-white rounded-3xl font-bold shadow-lg">Enregistrer</button>
@@ -433,6 +510,10 @@
                 document.getElementById('rating').value = p.rating;
                 document.getElementById('rating-val').innerText = p.rating;
                 document.getElementById('critique').value = p.critique || '';
+		document.getElementById('youtube-url').value = p.youtubeUrl || '';
+		document.getElementById('website-url').value = p.websiteUrl || '';
+		document.getElementById('image-urls').value =
+   		 Array.isArray(p.imageUrls) ? p.imageUrls.join('\n') : '';
             } else {
                 document.getElementById('rating-val').innerText = "3";
                 document.getElementById('rating').value = 3;
@@ -464,6 +545,12 @@
                 viewDate: document.getElementById('view-date-input').value,
                 rating: parseFloat(document.getElementById('rating').value),
                 critique: document.getElementById('critique').value,
+		youtubeUrl: document.getElementById('youtube-url').value.trim(),
+		websiteUrl: document.getElementById('website-url').value.trim(),
+		imageUrls: document.getElementById('image-urls').value
+   		 .split(/\r?\n/)
+   		 .map(url => url.trim())
+    		 .filter(Boolean),
                 userId: currentUser.uid,
                 updatedAt: serverTimestamp()
             };
@@ -517,7 +604,237 @@
             return '#aaa69d';
         }
         document.getElementById('rating').addEventListener('input', e => document.getElementById('rating-val').innerText = e.target.value);
+
+/* ===== NOUVELLES FONCTIONNALITÉS MULTIMÉDIAS ===== */
+
+let lightboxImages = [];
+let lightboxIndex = 0;
+
+// N'accepter que les URL HTTP(S).
+function getSafeHttpUrl(value) {
+    try {
+        const url = new URL(value);
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : null;
+    } catch {
+        return null;
+    }
+}
+
+// Accepter les formats YouTube classiques et youtu.be.
+function getYouTubeEmbedUrl(value) {
+    const safeUrl = getSafeHttpUrl(value);
+    if (!safeUrl) return null;
+
+    try {
+        const url = new URL(safeUrl);
+        let videoId = '';
+
+        if (url.hostname === 'youtu.be' || url.hostname === 'www.youtu.be') {
+            videoId = url.pathname.split('/').filter(Boolean)[0] || '';
+        } else if (
+            ['youtube.com', 'www.youtube.com', 'm.youtube.com',
+             'youtube-nocookie.com', 'www.youtube-nocookie.com']
+                .includes(url.hostname)
+        ) {
+            if (url.pathname === '/watch') {
+                videoId = url.searchParams.get('v') || '';
+            } else {
+                const match = url.pathname.match(
+                    /^\/(?:embed|shorts|live)\/([a-zA-Z0-9_-]+)/
+                );
+                videoId = match ? match[1] : '';
+            }
+        }
+
+        if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) return null;
+        return `https://www.youtube-nocookie.com/embed/${videoId}`;
+    } catch {
+        return null;
+    }
+}
+
+// Afficher les médias dans la fiche.
+function renderPieceMedia(piece) {
+    const container = document.getElementById('view-media-section');
+    const videoSection = document.getElementById('view-video-section');
+    const gallerySection = document.getElementById('view-gallery-section');
+    const websiteSection = document.getElementById('view-website-section');
+    const video = document.getElementById('view-video');
+    const gallery = document.getElementById('view-gallery');
+    const website = document.getElementById('view-website');
+
+    // Réinitialiser pour ne pas conserver les médias de la fiche précédente.
+    video.src = '';
+    gallery.replaceChildren();
+    website.removeAttribute('href');
+    videoSection.classList.add('hidden');
+    gallerySection.classList.add('hidden');
+    websiteSection.classList.add('hidden');
+    container.classList.add('hidden');
+
+    // Vidéo YouTube.
+    const embedUrl = getYouTubeEmbedUrl(piece.youtubeUrl || '');
+    if (embedUrl) {
+        video.src = embedUrl;
+        videoSection.classList.remove('hidden');
+        container.classList.remove('hidden');
+    }
+
+    // Galerie photo.
+    const imageUrls = Array.isArray(piece.imageUrls)
+        ? [...new Set(piece.imageUrls
+            .map(url => typeof url === 'string' ? getSafeHttpUrl(url) : null)
+            .filter(Boolean))]
+        : [];
+
+    if (imageUrls.length) {
+        gallery.replaceChildren();
+
+        imageUrls.forEach((url, index) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className =
+                'flex-shrink-0 snap-start overflow-hidden rounded-2xl ' +
+                'bg-gray-100 focus:outline-none focus:ring-2 focus:ring-black';
+            button.setAttribute('aria-label', `Agrandir la photo ${index + 1}`);
+
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = `Photo ${index + 1} de ${piece.title || 'la fiche'}`;
+            img.loading = 'lazy';
+            img.className =
+                'h-48 w-64 object-cover transition duration-300 hover:scale-105';
+
+            img.onerror = () => {
+                button.remove();
+                if (!gallery.querySelector('img')) {
+                    gallerySection.classList.add('hidden');
+                }
+                if (
+                    videoSection.classList.contains('hidden') &&
+                    websiteSection.classList.contains('hidden') &&
+                    gallerySection.classList.contains('hidden')
+                ) {
+                    container.classList.add('hidden');
+                }
+            };
+
+            button.appendChild(img);
+            button.addEventListener('click', () => openPhotoLightbox(imageUrls, index));
+            gallery.appendChild(button);
+        });
+
+        gallerySection.classList.remove('hidden');
+        container.classList.remove('hidden');
+    }
+
+    // Site officiel.
+    const websiteUrl = getSafeHttpUrl(piece.websiteUrl || '');
+    if (websiteUrl) {
+        website.href = websiteUrl;
+        websiteSection.classList.remove('hidden');
+        container.classList.remove('hidden');
+    }
+}
+
+// Ouvrir la visionneuse.
+window.openPhotoLightbox = (images, index) => {
+    lightboxImages = images;
+    lightboxIndex = index;
+    updateLightboxPhoto();
+
+    const lightbox = document.getElementById('photo-lightbox');
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.classList.add('modal-open');
+};
+
+// Mettre à jour la photo agrandie.
+function updateLightboxPhoto() {
+    if (!lightboxImages.length) return;
+
+    document.getElementById('lightbox-image').src = lightboxImages[lightboxIndex];
+    document.getElementById('lightbox-counter').textContent =
+        `${lightboxIndex + 1} / ${lightboxImages.length}`;
+
+    document.getElementById('photo-prev').classList.toggle(
+        'hidden', lightboxImages.length < 2
+    );
+    document.getElementById('photo-next').classList.toggle(
+        'hidden', lightboxImages.length < 2
+    );
+}
+
+// Passer à la photo précédente ou suivante.
+window.changeLightboxPhoto = (direction) => {
+    if (!lightboxImages.length) return;
+
+    lightboxIndex =
+        (lightboxIndex + direction + lightboxImages.length) % lightboxImages.length;
+
+    updateLightboxPhoto();
+};
+
+// Fermer la visionneuse.
+window.closePhotoLightbox = () => {
+    const lightbox = document.getElementById('photo-lightbox');
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    document.getElementById('lightbox-image').src = '';
+    lightboxImages = [];
+
+    if (!document.querySelector(
+        '#view-modal.flex, #form-modal.flex, #top-five-modal.flex'
+    )) {
+        document.body.classList.remove('modal-open');
+    }
+};
+
+// Navigation au clavier dans la visionneuse.
+document.addEventListener('keydown', event => {
+    const lightbox = document.getElementById('photo-lightbox');
+    if (lightbox.classList.contains('hidden')) return;
+
+    if (event.key === 'Escape') closePhotoLightbox();
+    if (event.key === 'ArrowLeft') changeLightboxPhoto(-1);
+    if (event.key === 'ArrowRight') changeLightboxPhoto(1);
+});
+
+/* ===== FIN DES FONCTIONNALITÉS MULTIMÉDIAS ===== */
     </script>
+
+<!-- VISIONNEUSE DES PHOTOS -->
+<div id="photo-lightbox"
+    class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/95 p-4"
+    role="dialog" aria-modal="true" aria-label="Photo agrandie"
+    onclick="if(event.target === this) closePhotoLightbox()">
+
+    <button type="button" onclick="closePhotoLightbox()"
+        aria-label="Fermer"
+        class="absolute right-5 top-5 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+        <i class="fas fa-times text-2xl"></i>
+    </button>
+
+    <button type="button" id="photo-prev" onclick="changeLightboxPhoto(-1)"
+        aria-label="Photo précédente"
+        class="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-4 text-white hover:bg-white/20">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <img id="lightbox-image" src="" alt="Photo agrandie"
+        class="max-h-[85vh] max-w-[80vw] rounded-xl object-contain">
+
+    <button type="button" id="photo-next" onclick="changeLightboxPhoto(1)"
+        aria-label="Photo suivante"
+        class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-4 text-white hover:bg-white/20">
+        <i class="fas fa-chevron-right"></i>
+    </button>
+
+    <p id="lightbox-counter"
+        class="absolute bottom-5 text-sm text-white/80"></p>
+</div>
+<!-- FIN VISIONNEUSE -->
+
 </body>
     <script>
 if ('serviceWorker' in navigator) {
